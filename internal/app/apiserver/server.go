@@ -30,5 +30,11 @@ func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) configureRouter() {
+	s.router.HandleFunc("/users", s.HandleUsersCreate()).Methods("POST")
+}
 
+func (s *server) HandleUsersCreate() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+	}
 }
