@@ -1,18 +1,22 @@
-package store
+package sqlstore
 
-import "github.com/Altabaev/Go-Rest-Api/internal/app/model"
+import (
+	"database/sql"
+	"github.com/Altabaev/Go-Rest-Api/internal/app/model"
+	"github.com/Altabaev/Go-Rest-Api/internal/app/store"
+)
 
 type UserRepository struct {
 	store *Store
 }
 
-func (r *UserRepository) Create(u *model.User) (*model.User, error) {
+func (r *UserRepository) Create(u *model.User) error {
 	if err := u.Validate(); err != nil {
-		return nil, err
+		return err
 	}
 
 	if err := u.BeforeCreate(); err != nil {
-		return nil, err
+		return err
 	}
 
 	if err := r.store.db.QueryRow(
@@ -20,10 +24,10 @@ func (r *UserRepository) Create(u *model.User) (*model.User, error) {
 		u.Email,
 		u.EncryptedPassword,
 	).Scan(&u.ID); err != nil {
-		return nil, err
+		return err
 	}
 
-	return u, nil
+	return nil
 }
 
 func (r *UserRepository) FindByEmail(email string) (*model.User, error) {
@@ -36,6 +40,9 @@ func (r *UserRepository) FindByEmail(email string) (*model.User, error) {
 		&u.Email,
 		&u.EncryptedPassword,
 	); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.ErrRecordNotFound
+		}
 		return nil, err
 	}
 
